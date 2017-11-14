@@ -1,3 +1,4 @@
+package LogBook;
 /*LogBookTest to konsolowy interfejs użytkownika. Odpowiada za tworzenie dzienników bądz logów. Odpowiada za tworzenie, usuwanie czy
 edycję plików. Tworzy obiekty klasy LogBook, które pózniej same odpowiadają za działania na swojej zawartości używając własnego menu.
 W trakcie trwania programu można stworzyć i usunąć wiele dzienników

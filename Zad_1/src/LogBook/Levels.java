@@ -1,3 +1,4 @@
+package LogBook;
 /*
  * Program: Typ wyliczeniowy, może być użyty do określania ważności wpisów w dzienniku, co może być przydatne np. przy ich sortowaniu,
  * wyświetlaniu czy szukaniu.

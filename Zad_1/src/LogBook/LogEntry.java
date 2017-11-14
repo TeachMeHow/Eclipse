@@ -1,3 +1,4 @@
+package LogBook;
 /*
  * Program: Klasa reprezentująca wpis w dzienniku. W moim programie jest używana jako część klasy LogBook. Przechowuje informacje o temacie,
  * 	treści i dacie wpisu. Posiada dwa konstruktory oraz metody użyteczne przy tworzeniu aplikacji konsolowych displayEntry() i toString()
@@ -42,21 +43,21 @@ public class LogEntry implements java.io.Serializable{
 	public void setPriority(int scale)
 	{
 		switch(scale) {
-		case 1: this.priority = Importance.NONE.warningMessage();
+		case 1: this.priority = Levels.NONE.warningMessage();
 		break;
-		case 2: this.priority = Importance.LOW.warningMessage();
+		case 2: this.priority = Levels.LOW.warningMessage();
 		break;
-		case 3: this.priority = Importance.MEDIUM_LOW.warningMessage();
+		case 3: this.priority = Levels.MEDIUM_LOW.warningMessage();
 		break;
-		case 4: this.priority = Importance.MEDIUM.warningMessage();
+		case 4: this.priority = Levels.MEDIUM.warningMessage();
 		break;
-		case 5: this.priority = Importance.MEDIUM_HIGH.warningMessage();
+		case 5: this.priority = Levels.MEDIUM_HIGH.warningMessage();
 		break;
-		case 6: this.priority = Importance.HIGH.warningMessage();
+		case 6: this.priority = Levels.HIGH.warningMessage();
 		break;
-		case 7: this.priority = Importance.VERY_HIGH.warningMessage();
+		case 7: this.priority = Levels.VERY_HIGH.warningMessage();
 		break;
-		default: this.priority = Importance.UNKNOWN.warningMessage();
+		default: this.priority = Levels.UNKNOWN.warningMessage();
 		}
 		
 	}
@@ -79,5 +80,4 @@ public class LogEntry implements java.io.Serializable{
 		return str;
 	}
 	private String priority;
-	private Levels Importance ;
 }

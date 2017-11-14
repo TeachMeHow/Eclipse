@@ -1,3 +1,4 @@
+package LogBook;
 /*
  * Program: Klasa posiada zmienne i typy danych przechowujące wpisy do dziennika i informacje o nich. Posiada metody pozwalające na
  * stworzenie plików dziennika oraz ich edycję (usuwaniem zajmuje się klasa LogBookConsoleApp). Metody tworzą wpisy i przechowują je w 
@@ -38,9 +39,10 @@ public class LogBook implements java.io.Serializable {
     }
 //pętla menu - do użytku w aplikacji konsolowej  
 public void runMenu() throws LogBookException{
-	//jak zamknę System.in to nie mogę już otworzyć, stąd @
-	@SuppressWarnings("resource")
+	//jak zamknę System.in to nie mogę już otworzyć, stąd @SupressWarnings("resource")
+	//no longer exists
 	Scanner keyboard = new Scanner(System.in)	;
+	//TODO keyboard from UI
 	int choice = -1;
 	//pętla menu - min. 1 wykonanie
 		do {
@@ -74,7 +76,7 @@ public void runMenu() throws LogBookException{
 			break;
 			//New Entry
 			case 1: 
-			initializeNewEntry();
+			initializeNewEntry(keyboard);
 			System.out.println("On a scale from 1 to 7, how important is it?");
 			try {
 				choice = Integer.parseInt(keyboard.nextLine());
@@ -141,15 +143,19 @@ public void runMenu() throws LogBookException{
 		else return "No such entry.";
 		}
 	//tworzy wpis i dodaje go do bazy danych oraz pyta o dane
-	public void initializeNewEntry() throws LogBookException{
+	/**
+	 * @param input Scanner object
+	 * @throws LogBookException
+	 */
+	public void initializeNewEntry(Scanner keyboard) throws LogBookException{
 		if(entryArray.size()<MAX_ENTRIES) {
 		entryArray.add(new LogEntry());
 		int pos = entryArray.size()-1;
-		Scanner keyboard = new Scanner(System.in);
 		System.out.println("Subject: ");
 		entryArray.get(pos).setSubject(keyboard.nextLine());
 		System.out.println("Message: ");
 		entryArray.get(pos).setMessage(keyboard.nextLine());
+		 // error?
 		}
 		else System.out.println("LogBook is full!");
 	}
