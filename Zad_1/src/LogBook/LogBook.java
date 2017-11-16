@@ -1,4 +1,4 @@
-package LogBook;
+package logBook;
 /*
  * Program: Klasa posiada zmienne i typy danych przechowujące wpisy do dziennika i informacje o nich. Posiada metody pozwalające na
  * stworzenie plików dziennika oraz ich edycję (usuwaniem zajmuje się klasa LogBookConsoleApp). Metody tworzą wpisy i przechowują je w 
@@ -12,6 +12,8 @@ package LogBook;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -23,20 +25,55 @@ class LogBookException extends Exception{
 	}	
 }
 //deklaracja klasy
-public class LogBook implements java.io.Serializable {
+public class LogBook implements java.io.Serializable, Iterable<LogEntry> {
 	//konstruktor z nazwą pliku - wywołuje metodę tworzącą plik na dysku
-	public LogBook(String name) throws LogBookException {
+	public LogBook(String name) throws LogBookException, LogEntryException {
     	initializeNewFile(name);
-    	entryArray = new ArrayList<>();
+    	//Domyślnie ArrayList
+    	type = GroupType.ARRAY_LIST;
+    	collection = this.type.createCollection();
     	LogBookCount++;
     }
 	//konstruktor bezargumentowy - sam tworzy nazwę
-    public LogBook() throws LogBookException
+    public LogBook() throws LogBookException, LogEntryException
     {
     	initializeNewFile("LogBook_"+String.valueOf(++LogBookCount));
-    	entryArray = new ArrayList<>();
-    	
+    	//Domyślnie ArrayList
+    	type = GroupType.ARRAY_LIST;
+    	collection = this.type.createCollection();
+    	LogBookCount++;
     }
+    //konstruktor
+    public LogBook(String name, GroupType newType) throws LogBookException, LogEntryException {
+    	initializeNewFile(name);
+    	if (type == null ) {
+    		throw new LogEntryException("Incorrect collection type");
+    	}
+    	type = newType;
+    	collection = this.type.createCollection();
+    	LogBookCount++;
+    }
+    public LogBook(String name, GroupType newType, Collection<LogEntry> c) throws LogBookException, LogEntryException {
+    	initializeNewFile(name);
+    	if (type == null ) {
+    		throw new LogEntryException("Incorrect collection type");
+    	}
+    	type = newType;
+    	collection = this.type.createCollection(c);
+    	LogBookCount++;
+    }
+    
+//Maksymalna liczba wpisów do pojedynczego dziennika
+	private static final int MAX_ENTRIES = 50;
+	//tablica przechowująca wpisy - dane
+	private ArrayList<LogEntry> entryArray;
+	private Collection<LogEntry> collection;
+	private GroupType type;
+//zmienna przechowuje wspólną nazwę plików, które odnoszą się czy też są dziennikiem. Zmienia się rozszerzenie.
+	private String filename;
+private static final long serialVersionUID = 1L;
+//Liczba stworzonych dzienników
+private static int LogBookCount = 0;
 //pętla menu - do użytku w aplikacji konsolowej  
 public void runMenu() throws LogBookException{
 	//jak zamknę System.in to nie mogę już otworzyć, stąd @SupressWarnings("resource")
@@ -46,7 +83,7 @@ public void runMenu() throws LogBookException{
 	int choice = -1;
 	//pętla menu - min. 1 wykonanie
 		do {
-			System.out.println("MENU\nCurrently "+entryArray.size()+countEntries()
+			System.out.println("MENU\nCurrently "+collection.size()+countEntries()
 					+ "\n1. New entry\n"
 					+ "2. View previous entries\n"
 					+ "3. Delete last entry\n"
@@ -60,16 +97,21 @@ public void runMenu() throws LogBookException{
 			switch (choice)
 			{
 			//Save & Exit - write every entry to file
-			case 0: try { PrintWriter out = new PrintWriter("src\\"+filename+".txt");
-			Consumer<LogEntry> cLam;
-			cLam=x->{x.writeToFile(out);
-			out.write("\n\n\n");
-			out.flush();
-			};
-			entryArray.forEach(cLam);}
+			case 0: 
+			try { @SuppressWarnings("resource")
+			PrintWriter out = new PrintWriter("src\\"+filename+".txt");
+			Iterator<LogEntry> it = collection.iterator();
+			
+			while (it.hasNext())
+			{
+				out.print(it.next().toString() + "\n\n");
+				out.flush();
+			}
+			}
 			catch (FileNotFoundException e) {
 				throw new LogBookException(filename+ ".txt not found");
-			};
+			}
+			;
 			
 			
 			Serialize();
@@ -77,18 +119,14 @@ public void runMenu() throws LogBookException{
 			//New Entry
 			case 1: 
 			initializeNewEntry(keyboard);
-			System.out.println("On a scale from 1 to 7, how important is it?");
-			try {
-				choice = Integer.parseInt(keyboard.nextLine());
-			} catch(NumberFormatException e) {
-				e.printStackTrace();}
-				entryArray.get(entryArray.size()-1).setPriority(choice);
+			
 			break;
 			// View previous
 			case 2:
-				Consumer<LogEntry> cLam;
-				cLam=x->x.displayEntry();
-				entryArray.forEach(cLam);
+				Iterator<LogEntry> it = collection.iterator();
+				while(it.hasNext()) {
+					System.out.println(it.next().toString());
+				}
 				; break;
 			// Delete last
 			case 3: entryArray.remove(entryArray.size()-1);
@@ -108,7 +146,6 @@ public void runMenu() throws LogBookException{
 	}//koniec menu
 
 //nowy plik na dysku - UWAGA nadpisuje
-//TODO flow control
  	private void initializeNewFile(String name) throws LogBookException{
  		this.filename=name;
  		PrintWriter out;
@@ -134,46 +171,71 @@ public void runMenu() throws LogBookException{
 			System.err.println(e);
 		}
 	};
-	//Gettery i settery
-	
-	//zwraca wpis w postaci tekstowej
-	public String getEntry(int i) {
-		if(i>-1 && i< entryArray.size())
-			return entryArray.get(i).toString();
-		else return "No such entry.";
-		}
 	//tworzy wpis i dodaje go do bazy danych oraz pyta o dane
 	/**
 	 * @param input Scanner object
 	 * @throws LogBookException
 	 */
+	//TODO remake !!!
 	public void initializeNewEntry(Scanner keyboard) throws LogBookException{
-		if(entryArray.size()<MAX_ENTRIES) {
-		entryArray.add(new LogEntry());
-		int pos = entryArray.size()-1;
-		System.out.println("Subject: ");
-		entryArray.get(pos).setSubject(keyboard.nextLine());
-		System.out.println("Message: ");
-		entryArray.get(pos).setMessage(keyboard.nextLine());
-		 // error?
+		if(collection.size()<MAX_ENTRIES) {
+			LogEntry nu = new LogEntry();
+			int choice = -1;
+			System.out.println("Subject: ");
+			nu.setSubject(keyboard.nextLine());
+			System.out.println("Message: ");
+			nu.setMessage(keyboard.nextLine());
+			System.out.println("On a scale from 1 to 7, how important is it?");
+			try {
+				choice = Integer.parseInt(keyboard.nextLine());
+			} catch(NumberFormatException e) {
+				e.printStackTrace();}
+			nu.setPriority(choice);
+		collection.add(nu);
 		}
 		else System.out.println("LogBook is full!");
 	}
-	//nic ważnego
-	private String countEntries () {
-	if (this.entryArray.size() != 1) return " entries";
-	else return " entry"; }
 	//metoda pomocna do śledzenia ilości dzienników, powinna być wywołana przy usuwaniu plików z dziennikiem
 	public static void decreaseLogBookCount() {
 		LogBookCount--;
 	};
-    //tablica przechowująca wpisy - dane
-    public ArrayList<LogEntry> entryArray;
-    //Maksymalna liczba wpisów do pojedynczego dziennika
-    private static final int MAX_ENTRIES = 50;
-    //Liczba stworzonych dzienników
-    private static int LogBookCount = 0;
-    private static final long serialVersionUID = 1L;
-    //zmienna przechowuje wspólną nazwę plików, które odnoszą się czy też są dziennikiem. Zmienia się rozszerzenie.
-    private String filename;
+    //nic ważnego
+	//
+	private String countEntries () {
+	if (this.collection.size() != 1) return " entries";
+	else return " entry"; }
+	@Override
+	public Iterator<LogEntry> iterator() {
+		return collection.iterator();
+	}
+	public boolean add(LogEntry e) {
+		return collection.add(e);
+	}
+	public boolean addAll(Collection<? extends LogEntry> c) {
+		return collection.addAll(c);
+	}
+	public void clear() {
+		// TODO Auto-generated method stub		
+	}
+	public boolean contains(Object o) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	public boolean containsAll(Collection<?> c) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	public boolean isEmpty() {
+		if (collection.size() == 0) return true;
+		else return false;
+	}
+	public boolean remove(Object o) {
+		return collection.remove(o);
+	}
+	public boolean removeAll(Collection<?> c) {
+		return collection.removeAll(c);
+	}
+	public int size() {
+		return collection.size();
+	}
 }

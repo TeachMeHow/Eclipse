@@ -1,4 +1,4 @@
-package LogBook;
+package logBook;
 
 import java.awt.EventQueue;
 

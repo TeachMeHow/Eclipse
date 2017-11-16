@@ -1,4 +1,4 @@
-package LogBook;
+package logBook;
 /*LogBookTest to konsolowy interfejs użytkownika. Odpowiada za tworzenie dzienników bądz logów. Odpowiada za tworzenie, usuwanie czy
 edycję plików. Tworzy obiekty klasy LogBook, które pózniej same odpowiadają za działania na swojej zawartości używając własnego menu.
 W trakcie trwania programu można stworzyć i usunąć wiele dzienników
@@ -30,7 +30,7 @@ public class LogBookConsoleApp {
 	//menu() to główna metoda programu - działa na zasadzie pętli, wykonuje funkcje dopóki użytkownik nie powie inaczej.
 	//odpowiada za tworzenie i edycję indywidualnych dzienników/logów. Każdy dziennik to osobny plik, który ta (LogBookTest) aplikacja
 	//otwiera, zmienia czy usuwa. Za działania na zawartości dzienników odpowiada klasa LogBook
-	private void runMenu() throws LogBookException{
+	private void runMenu() throws LogBookException, LogEntryException{
 	int choice = -1;
 	String filename;
 	@SuppressWarnings("resource")
@@ -135,7 +135,7 @@ public class LogBookConsoleApp {
 	//koniec menu
 		
 	//main
-	public static void main(String args[]) throws LogBookException{  
+	public static void main(String args[]) throws LogBookException, LogEntryException{  
 		Scanner keyboard = new Scanner(System.in);
 		//tworzy instancję programu i otwiera pętlę
 		LogBookConsoleApp app = new LogBookConsoleApp();
